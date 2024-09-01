@@ -1,6 +1,6 @@
 function iceCreamPrice (){
-   const smallCup  = 10;
-   const largeCup = 25;
+   const PriceOfSmallCup : number  = 10;
+   const largeCup : number= 25;
 
    const toppingsPrices : {[key : string]: number} = {
     шоколад: 5,
@@ -8,14 +8,14 @@ function iceCreamPrice (){
     ягоди: 10,
    };
 
-   const marshmallow = 5;
+   const marshmallow : number = 5;
 
    const size = prompt("Виберіть розмір стаканчика : маленький або великий?")?.toLowerCase();
 
-   let totalPrice = 0;
+   let totalPrice : number = 0;
 
    if (size === "маленький"){
-    totalPrice += smallCup;
+    totalPrice += PriceOfSmallCup;
    } else if (size === "великий"){
     totalPrice += largeCup;
    } else {
@@ -25,7 +25,7 @@ function iceCreamPrice (){
 
    
 
-   const toppings = prompt("Виберіть начинку (можна декілька через кому): шоколад, карамель, ягоди")?.toLowerCase().split(",").map(topping => topping.trim()) || [];
+   const toppings : Array<string> = prompt("Виберіть начинку (можна декілька через кому): шоколад, карамель, ягоди")?.toLowerCase().split(",").map(topping => topping.trim()) || [];
 
    if(toppings.length === 0 || toppings.some(topping => !(topping in toppingsPrices))){
     alert("Виберіть хоча б одну начтнку з наявних");
@@ -36,7 +36,7 @@ function iceCreamPrice (){
     totalPrice += toppingsPrices[topping];
    })
 
-   const addMarshmallow = prompt("Бажаєте додати маршмелоу? (так/ні)")?.toLowerCase();
+   const addMarshmallow : string = prompt("Бажаєте додати маршмелоу? (так/ні)").toLowerCase();
 
    if (addMarshmallow === "так" ){
     totalPrice += marshmallow;

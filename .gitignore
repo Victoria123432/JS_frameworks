@@ -1,3 +1,4 @@
 package.json
-lab1/package-lock.json
-lab1/tsconfig.json
+package-lock.json
+tsconfig.json
+node_modules

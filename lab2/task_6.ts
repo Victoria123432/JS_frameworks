@@ -105,3 +105,20 @@ class Library{
     }
 }
 
+const library = new Library();
+
+const book1 = new Book("Book title", "Author", 180);
+const magazine1 = new Magazine("Magazine tite", "Various authors", 202);
+const dvd1 = new DVD("DVD name", "DVD author", 102);
+
+library.addItem(book1);
+library.addItem(magazine1);
+library.addItem(dvd1);
+
+library.listAvailableItems();
+const itemToBorrow = library.findItemByName("Book title");
+if (itemToBorrow){  
+    itemToBorrow.borrow();
+}
+
+library.listAvailableItems();

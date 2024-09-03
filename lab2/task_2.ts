@@ -1,3 +1,6 @@
+let totalArea = 0;
+let totalPerimetr = 0;
+
 interface Shape{
     getArea(): number;
     getPerimeter(): number;
@@ -78,10 +81,7 @@ const shapes: Shape[] = [
     new Circle(10),
     new Rectangle(5, 10),
     new Triangle(3,4 ,5)
-];''
-
-let totalArea = 0;
-let totalPerimetr = 0;
+];
 
 shapes.forEach(shape => {
     totalArea += shape.getArea();

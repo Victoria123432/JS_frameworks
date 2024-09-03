@@ -76,3 +76,4 @@ myBird.fly();
 
 const myFish = new Fish("Bayayayo", 1,"fish tank");
 myFish.swim();
+

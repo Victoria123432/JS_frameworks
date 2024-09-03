@@ -1,3 +1,5 @@
+let totalAnnualBonus = 0;
+
 abstract class Employee {
     protected name: string;
     protected age: number;
@@ -44,9 +46,9 @@ const employees:  (Employee & Payable)[] =[
     new Manager("Bob Brown", 40, 85000)
 ]
 
-let totalAnnualBonus = 0;
-
 employees.forEach(employee => {
     totalAnnualBonus += employee.getAnnualBonus();
     employee.pay();
 });
+
+console.log(`Total annual bonus sum ${totalAnnualBonus}`)

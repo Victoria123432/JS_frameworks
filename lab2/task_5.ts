@@ -68,8 +68,8 @@ jsCourse.registerStudent('John Doe');
 tsCourse.registerStudent('Alice Johnson');
 pythonCourse.registerStudent('Bob Brown');
 
-console.log(jsCourse.isStudentRegistered('John Doe')); // true
-console.log(tsCourse.isStudentRegistered('Jane Smith')); // false
+console.log(jsCourse.isStudentRegistered('John Doe')); 
+console.log(tsCourse.isStudentRegistered('Jane Smith')); 
 
 courseManager.listCourses();
 

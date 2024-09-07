@@ -13,7 +13,7 @@ class Cat implements Animal{
     name: string;
     age: number;
     habitat: string;
-    legs: number =2;
+    legs: number =4;
 
     constructor(name: string, age: number, habitat: string){
         this.name = name;

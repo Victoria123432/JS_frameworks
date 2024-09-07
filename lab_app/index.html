@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Webpack App</title>
+    <link rel="stylesheet" href="./libs/bootstrap.min.css">
+    <link rel="stylesheet" href="index.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><script defer src="dist/bundle.js"></script></head>
+  <body class="text-bg-light p-3">
+    <div class="container">
+      <div class="header">
+        <p class="text-capitalize fs-3 fw-bold ">Система управління бібліотекою</p>
+      </div>
+      <form class="shadow p-3 mb-5 bg-body-tertiary rounded">
+        <p class="text-capitalize fs-4 fw-bold ">додати книгу</p>
+        <div class="mb-3">
+          <input type="text" class="form-control" placeholder="Назва книги">
+        </div>
+        <div class="mb-3">
+          <input type="text" class="form-control" placeholder="Автор">
+        </div>
+        <div class="mb-3">
+          <input type="namber" class="form-control" placeholder="Рік видання">
+        </div>
+        <button type="submit" class="btn btn-success">Додати книгу</button>
+      </form>
+    </div>
+    
+    <script src="./libs/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

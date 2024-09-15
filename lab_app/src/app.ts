@@ -8,22 +8,55 @@ const userLibrary = new Library<User>();
 const storage = new LocalStorageService();
 
 const savedBooks = storage.getItem('books');
-if (savedBooks){
-    savedBooks.forEach((bookData:{title: string; author: string; year: number})=>{
-        const book = new Book(bookData.title, bookData.author, bookData.year);
+if (savedBooks) {
+    savedBooks.forEach((bookData: { title: string; author: string; year: number; isBorrowed: boolean; borrowedBy?: number }) => {
+        const book = new Book(bookData.title, bookData.author, bookData.year, bookData.isBorrowed);
+        if (bookData.isBorrowed && bookData.borrowedBy !== undefined) {
+            book.borrowedBy = bookData.borrowedBy;
+        }
         bookLibrary.addItem(book);
     });
     renderBookList();
 }
 
+
 const savedUsers = storage.getItem('users');
 if (savedUsers) {
-    savedUsers.forEach((userData: { name: string; email: string }) => {
-        const user = new User(userData.name, userData.email);
+    savedUsers.forEach((userData: { name: string; email: string; borrowedBookCount: number}) => {
+        const user = new User(userData.name, userData.email, userData.borrowedBookCount);
         userLibrary.addItem(user);
     });
+
     renderUserList();
 }
+
+function saveBooks() {
+    const booksToSave = bookLibrary.getItems().map(book => ({
+        title: book.title,
+        author: book.author,
+        year: book.year,
+        isBorrowed: book.isBorrowed,
+        borrowedBy: book.isBorrowed ? book.borrowedBy : undefined
+    }));
+    storage.setItem('books', booksToSave);
+}
+
+function saveUsers() {
+    const usersToSave = userLibrary.getItems().map(user => ({
+        name: user.name,
+        email: user.email,
+        borrowedBookCount: user.borrowedBookCount,
+        // borrowedBooks: user.borrowedBooks.map(book => ({
+        //     title: book.title,
+        //     author: book.author,
+        //     year: book.year
+        // }))
+    }));
+    storage.setItem('users', usersToSave);
+}
+
+
+
 
 function renderBookList(){
     const bookList = document.getElementById('book-list-items') as HTMLElement;
@@ -105,6 +138,10 @@ function borrowBook(bookIndex:number, user_id: number){
             book.isBorrowed = true;
             book.borrowedBy = user_id;
             user.borrowBook(book);
+
+            saveBooks();
+            saveUsers();
+
             modalBodyContent.textContent = `${book.title} has been borrowed by ${user.name}`;
             renderBookList();
         } else{
@@ -121,6 +158,9 @@ function ReturnBook(bookIndex: number, user_id: number){
         book.isBorrowed = false;
         book.borrowedBy = undefined;
         user.returnBook(book);
+        saveBooks();
+        saveUsers();
+
         renderBookList();
     }
 }
@@ -147,6 +187,12 @@ function renderUserList(){
         button.addEventListener('click', (event)=>{
             const target = event.target as HTMLButtonElement;
             const index = target.getAttribute('data-index');
+            const user = userLibrary.getItems()[parseInt(index!)];
+            if(user.borrowedBookCount>=1){
+                const borrowedBooksList = user.borrowedBooks.map(book => `${book.title} (${book.author}, ${book.year})`).join(', ');
+                alert(`Щоб видалити користувача поверніть ${borrowedBooksList}`)
+                return;
+            }
             userLibrary.removeItem(parseInt(index!));
             storage.setItem('users', userLibrary.getItems());
             renderUserList();

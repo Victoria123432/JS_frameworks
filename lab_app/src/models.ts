@@ -37,11 +37,11 @@ export class User implements IUser{
     borrowedBookCount: number;
     borrowedBooks: Book[];
 
-    constructor(name: string, email: string){
+    constructor(name: string, email: string, borrowedBookCount: number = 0, borrowedBooks: Book[] = []){
         this.name =name;
         this.email = email;
-        this.borrowedBooks = [];
-        this.borrowedBookCount = 0;
+        this.borrowedBookCount = borrowedBookCount;
+        this.borrowedBooks = borrowedBooks;
     }   
 
     getInfo(): string{

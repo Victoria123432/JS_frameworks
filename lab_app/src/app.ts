@@ -37,14 +37,14 @@ function renderBookList(){
         const buttonClass = book.isBorrowed ? 'btn-warning' : 'btn-primary';
 
         const buttonAttributes = book.isBorrowed
-        ? `data-user-id="${book.borrowedBy}"`
-        : 'data-bs-toggle="modal" data-bs-target="#exampleModal"';
+        ? `data-user-id="${book.borrowedBy}" data-bs-target="#exampleModalToggle2"`
+        : 'data-bs-target="#exampleModal"';
 
        
         listItem.innerHTML = `
         <span>${book.title} - ${book.author} (${book.year})</span>
         <div class="gap-2 d-md-flex justify-content-md-end">
-        <button type="button" id="borrow-btn-${index}" class="btn ${buttonClass} borrow-btn" ${buttonAttributes} data-index="${index}"> ${buttonText}</button>
+        <button type="button" id="borrow-btn-${index}" class="btn ${buttonClass} borrow-btn" ${buttonAttributes}  data-bs-toggle="modal" data-index="${index}"> ${buttonText}</button>
         <button class="delete-book-btn btn btn-danger" data-index="${index}">Видалити</button>
         </div>
         `;
@@ -65,14 +65,12 @@ function renderBookList(){
             if(book.isBorrowed){
                 const user_id = target.getAttribute('data-user-id');
                 const userId = parseInt(user_id!);
+                const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
+                modalBodyContent.textContent = `${book.title} has been returned`;
                 ReturnBook(bookIndex, userId);
             } else{
              const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
              saveButton.setAttribute('data-index', index!);
-             saveButton.setAttribute('data-book-title', book.title);
-
-             const borrowButton = target;
-             saveButton.setAttribute('data-borrow-button-id', borrowButton.id);
             }    
         });
     });
@@ -92,33 +90,27 @@ document.getElementById('saveButton')?.addEventListener('click', () =>{
     const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
     const book_index = saveButton.getAttribute('data-index');
     const bookIndex = parseInt(book_index!);
-    const bookTitle = saveButton.getAttribute('data-book-title');
     const user_id = (document.getElementById('user-id') as HTMLTextAreaElement).value;
     const userId = parseInt(user_id!);
-
     borrowBook(bookIndex, userId);
-
-    // Оновлення інформації у другому модальному вікні
-    const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
-    modalBodyContent.textContent = `${bookTitle} has been borrowed by ${userId}`;
 })
 
 function borrowBook(bookIndex:number, user_id: number){
     const book = bookLibrary.getItems()[bookIndex];
     const user = userLibrary.getItems()[user_id];
+    const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
 
     if(!book.isBorrowed){
         if(user.canBorrowMoreBooks()){
             book.isBorrowed = true;
             book.borrowedBy = user_id;
             user.borrowBook(book);
+            modalBodyContent.textContent = `${book.title} has been borrowed by ${user.name}`;
             renderBookList();
         } else{
-            alert('Користувач не може позичити більше трьох книг!');
+            modalBodyContent.textContent = `Користувач не може позичити більше трьох книг!`;
         }
-    } else{
-        alert('Ця книга вже позичена!');
-    }
+    } 
 }
 
 function ReturnBook(bookIndex: number, user_id: number){

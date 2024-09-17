@@ -1,6 +1,7 @@
 import {Book, User} from './models';
 import { Library} from './library';
 import {LocalStorageService} from './services';
+import { validateBookForm, ValidationError, validateUserForm,  validateUserId } from './validation';
 
 const bookLibrary = new Library<Book>();
 const userLibrary = new Library<User>();
@@ -18,7 +19,6 @@ if (savedBooks) {
     });
     renderBookList();
 }
-
 
 const savedUsers = storage.getItem('users');
 if (savedUsers) {
@@ -45,17 +45,10 @@ function saveUsers() {
     const usersToSave = userLibrary.getItems().map(user => ({
         name: user.name,
         email: user.email,
-        borrowedBookCount: user.borrowedBookCount,
-        // borrowedBooks: user.borrowedBooks.map(book => ({
-        //     title: book.title,
-        //     author: book.author,
-        //     year: book.year
-        // }))
+        borrowedBookCount: user.borrowedBookCount
     }));
     storage.setItem('users', usersToSave);
 }
-
-
 
 
 function renderBookList(){
@@ -124,6 +117,7 @@ document.getElementById('saveButton')?.addEventListener('click', () =>{
     const book_index = saveButton.getAttribute('data-index');
     const bookIndex = parseInt(book_index!);
     const user_id = (document.getElementById('user-id') as HTMLTextAreaElement).value;
+    validateUserId(user_id, userLibrary );
     const userId = parseInt(user_id!);
     borrowBook(bookIndex, userId);
 })
@@ -141,6 +135,9 @@ function borrowBook(bookIndex:number, user_id: number){
 
             saveBooks();
             saveUsers();
+
+            // storage.setItem('books', bookLibrary.getItems());
+            // storage.setItem('users', bookLibrary.getItems());
 
             modalBodyContent.textContent = `${book.title} has been borrowed by ${user.name}`;
             renderBookList();
@@ -160,6 +157,9 @@ function ReturnBook(bookIndex: number, user_id: number){
         user.returnBook(book);
         saveBooks();
         saveUsers();
+
+        // storage.setItem('books', bookLibrary.getItems());
+        // storage.setItem('users', bookLibrary.getItems());
 
         renderBookList();
     }
@@ -210,9 +210,24 @@ document.querySelector('form.book-form')?.addEventListener('submit', (event) => 
 
     const title = titleInput.value;
     const author = authorInput.value;
-    const year = parseInt(yearInput.value, 10);
+    const year = yearInput.value;
 
-    const book = new Book(title, author, year);
+    const errors: ValidationError[] = validateBookForm(title, author, year);
+
+    document.querySelectorAll('.error-message').forEach(errorElement => {
+        errorElement.textContent = '';
+    });
+
+    if (errors.length > 0) {
+        errors.forEach(error => {
+            const errorElement = document.getElementById(`${error.field}-error`) as HTMLElement;
+            errorElement.textContent = error.message;
+            errorElement.style.display = 'block';
+        });
+        return;
+    }
+
+    const book = new Book(title, author, parseInt(year, 10));
     bookLibrary.addItem(book);
 
     storage.setItem('books', bookLibrary.getItems());
@@ -222,8 +237,6 @@ document.querySelector('form.book-form')?.addEventListener('submit', (event) => 
     yearInput.value = '';
 
     renderBookList();
-
-    console.log('Оновлений список книг:', bookLibrary.getItems());
 
 });
 
@@ -236,6 +249,21 @@ document.querySelector('form.user-form')?.addEventListener('submit', (event) =>{
     const name = nameInput.value;
     const email = emailInput.value;
 
+    const errors: ValidationError[] = validateUserForm(name, email);
+
+    document.querySelectorAll('.error-message').forEach(errorElement => {
+        errorElement.textContent = '';
+    });
+
+    if (errors.length > 0) {
+        errors.forEach(error => {
+            const errorElement = document.getElementById(`${error.field}-error`) as HTMLElement;
+            errorElement.textContent = error.message;
+            errorElement.style.display = 'block';
+        });
+        return;
+    }
+
     const user = new User(name, email);
     userLibrary.addItem(user);
 
@@ -245,6 +273,4 @@ document.querySelector('form.user-form')?.addEventListener('submit', (event) =>{
     emailInput.value ='';
 
     renderUserList();
-
-    console.log(userLibrary.getItems());
 });

@@ -4,10 +4,6 @@ export class Library<T>{
     addItem(item: T): void{
         this.items.push(item);
     }
-    
-    // addItem = (item: T): void =>{
-    //     this.items.push(item);
-    // };
 
     removeItem(index: number): void{
         if (index >= 0 && index < this.items.length){

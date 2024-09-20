@@ -1,276 +1,283 @@
 import {Book, User} from './models';
 import { Library} from './library';
 import {LocalStorageService} from './services';
-import { validateBookForm, ValidationError, validateUserForm,  validateUserId } from './validation';
+import { FormValidator } from './validation';
+import { ModalManager } from './modal';
 
-const bookLibrary = new Library<Book>();
-const userLibrary = new Library<User>();
+class App{
+    private bookLibrary: Library<Book>;
+    private userLibrary: Library<User>;
+    private storage: LocalStorageService;
+    private modalManager: ModalManager;
+    private  formValidator: FormValidator;
 
-const storage = new LocalStorageService();
+    constructor(){
+        this.bookLibrary = new Library<Book>();
+        this.userLibrary = new Library<User>();
+        this.storage = new LocalStorageService();
+        this.modalManager = new ModalManager();
+        this.formValidator = new  FormValidator();
 
-const savedBooks = storage.getItem('books');
-if (savedBooks) {
-    savedBooks.forEach((bookData: { title: string; author: string; year: number; isBorrowed: boolean; borrowedBy?: number }) => {
-        const book = new Book(bookData.title, bookData.author, bookData.year, bookData.isBorrowed);
-        if (bookData.isBorrowed && bookData.borrowedBy !== undefined) {
-            book.borrowedBy = bookData.borrowedBy;
+        this.loadBooks();
+        this.loadUsers();
+        this.setupEventListeners();
+        this.saveBooks();
+        this.saveUsers();
+    }
+
+    private loadBooks(): void{
+        const savedBooks = this.storage.getItem('books');
+        if (savedBooks){
+            savedBooks.forEach((bookData: any)=>{
+                const book = new Book(bookData.title, bookData.author, bookData.year, bookData.isBorrowed);
+                if (bookData.isBorrowed && bookData.borrowedBy !== undefined){
+                    book.borrowedBy = bookData.borrowedBy;
+                }
+                this.bookLibrary.addItem(book);
+            });
+            this.renderBookList();
         }
-        bookLibrary.addItem(book);
-    });
-    renderBookList();
-}
+    }
 
-const savedUsers = storage.getItem('users');
-if (savedUsers) {
-    savedUsers.forEach((userData: { name: string; email: string; borrowedBookCount: number}) => {
-        const user = new User(userData.name, userData.email, userData.borrowedBookCount);
-        userLibrary.addItem(user);
-    });
+    private loadUsers(): void{
+        const savedUsers = this.storage.getItem('users');
+        if (savedUsers){
+            savedUsers.forEach((userData: any) => {
+                const user = new User(userData.name, userData.email, userData.borrowedBookCount);
+                this.userLibrary.addItem(user);
+            });
+            this.renderUserList();
+        }
+    }
 
-    renderUserList();
-}
+    private saveUsers(): void{
+        const usersToSave = this.userLibrary.getItems().map(user => ({
+            name: user.name,
+            email: user.email,
+            borrowedBookCount: user.borrowedBookCount
+        }));
+        this.storage.setItem('users', usersToSave);
+    }
 
-function saveBooks() {
-    const booksToSave = bookLibrary.getItems().map(book => ({
-        title: book.title,
-        author: book.author,
-        year: book.year,
-        isBorrowed: book.isBorrowed,
-        borrowedBy: book.isBorrowed ? book.borrowedBy : undefined
-    }));
-    storage.setItem('books', booksToSave);
-}
+    private saveBooks(): void{
+        const booksToSave = this.bookLibrary.getItems().map(book => ({
+            title: book.title,
+            author: book.author,
+            year: book.year,
+            isBorrowed: book.isBorrowed,
+            borrowedBy: book.isBorrowed ? book.borrowedBy : undefined
+        }));
+        this.storage.setItem('books', booksToSave);
+    }
 
-function saveUsers() {
-    const usersToSave = userLibrary.getItems().map(user => ({
-        name: user.name,
-        email: user.email,
-        borrowedBookCount: user.borrowedBookCount
-    }));
-    storage.setItem('users', usersToSave);
-}
+    private setupEventListeners(): void{
+        document.getElementById('saveButton')?.addEventListener('click', () => {
+            const bookIndex = parseInt((document.getElementById('saveButton') as HTMLButtonElement).getAttribute('data-index')!);
+            const userId = parseInt((document.getElementById('user-id') as HTMLTextAreaElement).value);
+            this.borrowBook(bookIndex, userId);
 
+        });
+    }
 
-function renderBookList(){
-    const bookList = document.getElementById('book-list-items') as HTMLElement;
-    bookList.innerHTML = '';
-
-    bookLibrary.getItems().forEach((book, index)=>{
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item d-flex justify-content-between';
-
-        const buttonText = book.isBorrowed ? 'Повернути' : 'Позичити';
-        const buttonClass = book.isBorrowed ? 'btn-warning' : 'btn-primary';
-
-        const buttonAttributes = book.isBorrowed
-        ? `data-user-id="${book.borrowedBy}" data-bs-target="#exampleModalToggle2"`
-        : 'data-bs-target="#exampleModal"';
-
-       
-        listItem.innerHTML = `
-        <span>${book.title} - ${book.author} (${book.year})</span>
-        <div class="gap-2 d-md-flex justify-content-md-end">
-        <button type="button" id="borrow-btn-${index}" class="btn ${buttonClass} borrow-btn" ${buttonAttributes}  data-bs-toggle="modal" data-index="${index}"> ${buttonText}</button>
-        <button class="delete-book-btn btn btn-danger" data-index="${index}">Видалити</button>
-        </div>
-        `;
+    private renderBookList(): void{
+        const bookList = document.getElementById('book-list-items') as HTMLElement;
+        bookList.innerHTML = '';
         
+        this.bookLibrary.getItems().forEach((book, index)=>{
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between';
 
-        bookList.appendChild(listItem);   
+            const buttonText = book.isBorrowed ? 'Повернути' : 'Позичити';
+            const buttonClass = book.isBorrowed ? 'btn-warning' : 'btn-primary';
+            const buttonAttributes = book.isBorrowed
+                ? `data-user-id="${book.borrowedBy}" data-bs-target="#exampleModalToggle2"`
+                : 'data-bs-target="#exampleModal"';
 
-    });
+                listItem.innerHTML = `
+                <span>${book.title} - ${book.author} (${book.year})</span>
+                <div class="gap-2 d-md-flex justify-content-md-end">
+                    <button type="button" id="borrow-btn-${index}" class="btn ${buttonClass} borrow-btn" ${buttonAttributes} data-bs-toggle="modal" data-index="${index}">${buttonText}</button>
+                    <button class="delete-book-btn btn btn-danger" data-index="${index}">Видалити</button>
+                </div>
+            `;    
 
-    document.querySelectorAll('.borrow-btn').forEach(button =>{
-        button.addEventListener('click', (event)=>{
-            const target = event.target as HTMLButtonElement;
-            const index = target.getAttribute('data-index');
+            bookList.appendChild(listItem);
+            
+        })
 
-            const bookIndex = parseInt(index!);
-            const book = bookLibrary.getItems()[bookIndex];
+        this.setupBookEventListeners();
+        this.addBook();
 
-            if(book.isBorrowed){
-                const user_id = target.getAttribute('data-user-id');
-                const userId = parseInt(user_id!);
-                const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
-                modalBodyContent.textContent = `${book.title} has been returned`;
-                ReturnBook(bookIndex, userId);
-            } else{
-             const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
-             saveButton.setAttribute('data-index', index!);
-            }    
+    }
+
+    private setupBookEventListeners(): void{
+        document.querySelectorAll('.borrow-btn').forEach(button => {
+            button.addEventListener('click', (event)=>{
+                const target = event.target as HTMLButtonElement;
+                const index = target.getAttribute('data-index');
+                const bookIndex = parseInt(index!);
+                const book = this.bookLibrary.getItems()[bookIndex];
+
+                if (book.isBorrowed) {
+                    const userId = parseInt(target.getAttribute('data-user-id')!);
+                    this.modalManager.setModalContent('exampleModalToggle2', `${book.title} has been returned`);
+                    this.returnBook(bookIndex, userId);
+                } else {
+                    const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
+                    saveButton.setAttribute('data-index', index!);
+                }
+            })
+        })
+
+        document.querySelectorAll('.delete-book-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const target = event.target as HTMLButtonElement;
+                const index = target.getAttribute('data-index');
+                this.bookLibrary.removeItem(parseInt(index!));
+                this.storage.setItem('books', this.bookLibrary.getItems());
+                this.renderBookList();
+            });
         });
-    });
+    }
 
-    document.querySelectorAll('.delete-book-btn').forEach(button =>{
-        button.addEventListener('click', (event)=>{
-            const target = event.target as HTMLButtonElement;
-            const index = target.getAttribute('data-index');
-            bookLibrary.removeItem(parseInt(index!));
-            storage.setItem('books', bookLibrary.getItems());
-            renderBookList();
-        });
-    });
-}
+    private borrowBook(bookIndex: number, userId: number): void {
+        const book = this.bookLibrary.getItems()[bookIndex];
+        const user = this.userLibrary.getItems()[userId];
 
-document.getElementById('saveButton')?.addEventListener('click', () =>{  
-    const saveButton = document.getElementById('saveButton') as HTMLButtonElement;
-    const book_index = saveButton.getAttribute('data-index');
-    const bookIndex = parseInt(book_index!);
-    const user_id = (document.getElementById('user-id') as HTMLTextAreaElement).value;
-    validateUserId(user_id, userLibrary );
-    const userId = parseInt(user_id!);
-    borrowBook(bookIndex, userId);
-})
-
-function borrowBook(bookIndex:number, user_id: number){
-    const book = bookLibrary.getItems()[bookIndex];
-    const user = userLibrary.getItems()[user_id];
-    const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
-
-    if(!book.isBorrowed){
-        if(user.canBorrowMoreBooks()){
+        if (!book.isBorrowed && user.canBorrowMoreBooks()) {
             book.isBorrowed = true;
-            book.borrowedBy = user_id;
+            book.borrowedBy = userId;
             user.borrowBook(book);
 
-            saveBooks();
-            saveUsers();
+            this.storage.setItem('books', this.bookLibrary.getItems());
+            this.storage.setItem('users', this.userLibrary.getItems());
 
-            // storage.setItem('books', bookLibrary.getItems());
-            // storage.setItem('users', bookLibrary.getItems());
-
-            modalBodyContent.textContent = `${book.title} has been borrowed by ${user.name}`;
-            renderBookList();
-        } else{
-            modalBodyContent.textContent = `Користувач не може позичити більше трьох книг!`;
+            this.modalManager.setModalContent('exampleModalToggle2', `${book.title} has been borrowed by ${user.name}`);
+            this.renderBookList();
+        } else {
+            this.modalManager.setModalContent('exampleModalToggle2', 'Користувач не може позичити більше трьох книг!');
         }
-    } 
-}
-
-function ReturnBook(bookIndex: number, user_id: number){
-    const book  = bookLibrary.getItems()[bookIndex];
-    const user = userLibrary.getItems()[user_id];
-
-    if(book.isBorrowed){
-        book.isBorrowed = false;
-        book.borrowedBy = undefined;
-        user.returnBook(book);
-        saveBooks();
-        saveUsers();
-
-        // storage.setItem('books', bookLibrary.getItems());
-        // storage.setItem('users', bookLibrary.getItems());
-
-        renderBookList();
     }
-}
 
-function renderUserList(){
-    const userList = document.getElementById('user-list-items') as HTMLElement;
-    userList.innerHTML = '';
+    private returnBook(bookIndex: number, userId: number): void {
+        const book = this.bookLibrary.getItems()[bookIndex];
+        const user = this.userLibrary.getItems()[userId];
 
-    userLibrary.getItems().forEach((user, index)=>{
-        const listItem = document.createElement('li');
-        listItem.className = 'list-group-item d-flex justify-content-between';
+        if (book.isBorrowed) {
+            book.isBorrowed = false;
+            book.borrowedBy = undefined;
+            user.returnBook(book);
 
-        listItem.innerHTML = `
-        <span>${user.name} - ${user.email}</span>
-        <div class="d-md-flex justify-content-md-end">
-        <button class="delate-user-btn btn btn-primary btn-danger" data-index="${index}">Видалити</button>
-        </div>`;
+            this.saveBooks();
+            this.saveUsers();
 
-        userList.appendChild(listItem);   
+            this.storage.setItem('books', this.bookLibrary.getItems());
+            this.storage.setItem('users', this.userLibrary.getItems());
 
-    });
+            this.renderBookList();
+        }
+    }
 
-    document.querySelectorAll('.delate-user-btn').forEach(button =>{
-        button.addEventListener('click', (event)=>{
-            const target = event.target as HTMLButtonElement;
-            const index = target.getAttribute('data-index');
-            const user = userLibrary.getItems()[parseInt(index!)];
-            if(user.borrowedBookCount>=1){
-                const borrowedBooksList = user.borrowedBooks.map(book => `${book.title} (${book.author}, ${book.year})`).join(', ');
-                alert(`Щоб видалити користувача поверніть ${borrowedBooksList}`)
-                return;
+    private renderUserList(): void {
+        const userList = document.getElementById('user-list-items') as HTMLElement;
+        userList.innerHTML = '';
+
+        this.userLibrary.getItems().forEach((user, index) => {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item d-flex justify-content-between';
+
+            listItem.innerHTML = `
+                <span>${user.name} - ${user.email}</span>
+                <div class="d-md-flex justify-content-md-end">
+                    <button class="delete-user-btn btn btn-danger" data-index="${index}">Видалити</button>
+                </div>`;
+
+            userList.appendChild(listItem);
+        });
+
+        this.setupUserEventListeners();
+        this.addUser();
+    }
+
+    private setupUserEventListeners(): void {
+        document.querySelectorAll('.delete-user-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const target = event.target as HTMLButtonElement;
+                const index = target.getAttribute('data-index');
+                const user = this.userLibrary.getItems()[parseInt(index!)];
+
+                if (user.borrowedBookCount > 0) {
+                    alert(`Щоб видалити користувача, поверніть усі книги`);
+                }
+
+                this.userLibrary.removeItem(parseInt(index!));
+                this.storage.setItem('users', this.userLibrary.getItems());
+                this.renderUserList();
+            });
+        });
+    }
+
+    private addBook():void{
+        document.querySelector('#book-form')?.addEventListener('submit', (event) => {
+            event.preventDefault();
+        
+            const titleInput = document.querySelector('input[placeholder="Назва книги"]') as HTMLInputElement;
+            const authorInput = document.querySelector('input[placeholder="Автор"]') as HTMLInputElement;
+            const yearInput = document.querySelector('input[placeholder="Рік видання"]') as HTMLInputElement;
+        
+            const title = titleInput.value;
+            const author = authorInput.value;
+            const year = yearInput.value;
+
+            const isValid = this.formValidator.validateForm('book-form');
+
+            if(isValid){
+                const book = new Book(title, author, parseInt(year, 10));
+                this.bookLibrary.addItem(book);
+                this.modalManager.setModalContent('exampleModalToggle2', `Книжку ${book.title} додано!`);
+                this.modalManager.open('exampleModalToggle2');
+            
+                this.storage.setItem('books', this.bookLibrary.getItems());
+            
+                titleInput.value= '';
+                authorInput.value = '';
+                yearInput.value = '';
+            
+                this.renderBookList();
             }
-            userLibrary.removeItem(parseInt(index!));
-            storage.setItem('users', userLibrary.getItems());
-            renderUserList();
+        
+        
         });
-    });
+    }
+
+    private addUser():void{
+        document.querySelector('#user-form')?.addEventListener('submit', (event) =>{
+            event.preventDefault();
+        
+            const nameInput = document.querySelector('input[placeholder = "Ім\'я"]') as HTMLInputElement;
+            const emailInput = document.querySelector('input[placeholder = "Email"]') as HTMLInputElement;
+        
+            const name = nameInput.value;
+            const email = emailInput.value;
+            
+            const isValid = this.formValidator.validateForm('user-form');
+
+            if(isValid){
+                const user = new User(name, email);
+                this.userLibrary.addItem(user);
+                this.modalManager.setModalContent('exampleModalToggle2', `Користувача ${user.name} додано!`);
+                this.modalManager.open('exampleModalToggle2');
+     
+                this.storage.setItem('users', this.userLibrary.getItems());
+            
+                nameInput.value ='';
+                emailInput.value ='';
+            
+                this.renderUserList();
+            }
+        });
+    }
+
 }
 
-
-document.querySelector('form.book-form')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const titleInput = document.querySelector('input[placeholder="Назва книги"]') as HTMLInputElement;
-    const authorInput = document.querySelector('input[placeholder="Автор"]') as HTMLInputElement;
-    const yearInput = document.querySelector('input[placeholder="Рік видання"]') as HTMLInputElement;
-
-    const title = titleInput.value;
-    const author = authorInput.value;
-    const year = yearInput.value;
-
-    const errors: ValidationError[] = validateBookForm(title, author, year);
-
-    document.querySelectorAll('.error-message').forEach(errorElement => {
-        errorElement.textContent = '';
-    });
-
-    if (errors.length > 0) {
-        errors.forEach(error => {
-            const errorElement = document.getElementById(`${error.field}-error`) as HTMLElement;
-            errorElement.textContent = error.message;
-            errorElement.style.display = 'block';
-        });
-        return;
-    }
-
-    const book = new Book(title, author, parseInt(year, 10));
-    bookLibrary.addItem(book);
-
-    storage.setItem('books', bookLibrary.getItems());
-
-    titleInput.value= '';
-    authorInput.value = '';
-    yearInput.value = '';
-
-    renderBookList();
-
-});
-
-document.querySelector('form.user-form')?.addEventListener('submit', (event) =>{
-    event.preventDefault();
-
-    const nameInput = document.querySelector('input[placeholder = "Ім\'я"]') as HTMLInputElement;
-    const emailInput = document.querySelector('input[placeholder = "Email"]') as HTMLInputElement;
-
-    const name = nameInput.value;
-    const email = emailInput.value;
-
-    const errors: ValidationError[] = validateUserForm(name, email);
-
-    document.querySelectorAll('.error-message').forEach(errorElement => {
-        errorElement.textContent = '';
-    });
-
-    if (errors.length > 0) {
-        errors.forEach(error => {
-            const errorElement = document.getElementById(`${error.field}-error`) as HTMLElement;
-            errorElement.textContent = error.message;
-            errorElement.style.display = 'block';
-        });
-        return;
-    }
-
-    const user = new User(name, email);
-    userLibrary.addItem(user);
-
-    storage.setItem('users', userLibrary.getItems());
-
-    nameInput.value ='';
-    emailInput.value ='';
-
-    renderUserList();
-});
+const app = new App();

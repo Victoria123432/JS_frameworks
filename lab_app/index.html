@@ -12,31 +12,31 @@
         <p class="text-capitalize fs-3 fw-bold ">Система управління бібліотекою</p>
       </div>
       
-      <form class="shadow p-3 mb-5 bg-body-tertiary rounded book-form">
+      <form class="shadow p-3 mb-5 bg-body-tertiary rounded" id="book-form">
         <p class="text-capitalize fs-4 fw-bold">додати книгу</p>
         <div class="mb-3">
-          <input type="text" class="form-control" placeholder="Назва книги">
+          <input type="text" class="form-control" placeholder="Назва книги" data-validation="required" id="title">
           <small class=" error-message text-danger" id="title-error"></small>
         </div>
         <div class="mb-3">
-          <input type="text" class="form-control" placeholder="Автор">
+          <input type="text" class="form-control" placeholder="Автор" data-validation="required" id="author">
           <small class=" error-message text-danger" id="author-error"></small>
         </div>
         <div class="mb-3">
-          <input type="number" class="form-control" placeholder="Рік видання">
+          <input type="number" class="form-control"  placeholder="Рік видання" data-validation="year" id="year">
           <small class=" error-message text-danger" id="year-error"></small>
         </div>
         <button type="submit" class="btn btn-success text-capitalize">Додати книгу</button>
       </form>
     
-      <form class="shadow p-3 mb-5 bg-body-tertiary rounded user-form">
+      <form class="shadow p-3 mb-5 bg-body-tertiary rounded" id="user-form">
         <p class="text-capitalize fs-4 fw-bold">додати користувача</p>
         <div class="mb-3">
-          <input type="text" class="form-control" placeholder="Ім'я">
+          <input type="text" class="form-control" placeholder="Ім'я" data-validation="required">
           <small class=" error-message text-danger" id="name-error"></small>
         </div>
         <div class="mb-3">
-          <input type="email" class="form-control" placeholder="Email">
+          <input type="email" class="form-control" placeholder="Email" data-validation="required">
           <small class=" error-message text-danger" id="email-error"></small>
         </div>
         <button type="submit" class="btn btn-success text-capitalize">Додати користувача</button>

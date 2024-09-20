@@ -1,59 +1,77 @@
-import { User} from './models';
-import { Library} from './library';
+enum ValidationType {
+    Required = 'required',
+    Number = 'number',
+    Year = 'year',
+}
 
-export interface ValidationError {
-    field: string;
+export interface ValidationStrategy{
+    validate(value: string): boolean;
     message: string;
 }
 
-export function validateBookForm(title: string, author: string, year: string): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    if (title.trim() === '') {
-        errors.push({ field: 'title', message: 'Назва книги є обов*язковою' });
+export class RequiredValidator implements ValidationStrategy{
+    validate(value: string): boolean{
+        return value.trim() !=='';
     }
-
-    if (author.trim() === '') {
-        errors.push({ field: 'author', message: 'Автор є обов*язковим' });
-    }
-
-    if (year.trim() === '') {
-        errors.push({ field: 'year', message: 'Рік видання є обов*язковим' });
-    } else if (!/^\d{4}$/.test(year)) {
-        errors.push({ field: 'year', message: 'Введіть коректний рік (4 цифри)' });
-    }
-
-    return errors;
+    message: string = "Обов'язкове значення";
 }
 
-export function validateUserForm(name:string, email: string): ValidationError[] {
-    const errors: ValidationError[] = [];
-
-    if (name.trim() ===''){
-        errors.push({field: 'name', message:'Ім*я є бов*язковим'});
+export class NumberValidator implements ValidationStrategy{
+    validate(value: string): boolean{
+        return /^\d+$/.test(value);
     }
-    if(email.trim() ===''){
-        errors.push({field: 'email', message: 'Emaile є бов*язковим'})
-    }
-
-    return errors;
-
+    message: string = "Значення має бути числом";
 }
 
-
-export function validateUserId(user_id: string, userLibrary: Library<User>): void {
-    const modalBodyContent = document.getElementById('modalBodyContent') as HTMLElement;
-    if (!/^\d+$/.test(user_id)) {
-        modalBodyContent.textContent = `ID має бути числом`;
-        return;
+export class YearValidator implements ValidationStrategy{
+    validate(value: string): boolean{
+        return /^\d{4}$/.test(value);
     }
+    message: string = "Введіть коректний рік (4 цифри)";
+}
 
-    const userId = parseInt(user_id, 10);
-    const user = userLibrary.getItems()[userId];
+class ValidatorSelector {
+    private static validators: { [key in ValidationType]: ValidationStrategy } = {
+        [ValidationType.Required]: new RequiredValidator(),
+        [ValidationType.Number]: new NumberValidator(),
+        [ValidationType.Year]: new YearValidator(),
+    };
 
-    if (!user) {
-        modalBodyContent.textContent = `Такого користувача не існує`;
-        return;
+    static select(validationType: ValidationType): ValidationStrategy {
+        return this.validators[validationType];
     }
+}
 
+export class FormValidator {
+    public validateForm(formId: string): boolean {
+        const form = document.getElementById(formId) as HTMLFormElement;
+        const inputs = form.querySelectorAll('[data-validation]');
+
+        let isValid = true;
+
+        inputs.forEach(input => {
+            const validationTypes = input.getAttribute('data-validation')?.split(',') as ValidationType[];
+            const value = (input as HTMLInputElement).value;
+
+            validationTypes.forEach(validationType => {
+                const validator = ValidatorSelector.select(validationType);
+
+                if (!validator.validate(value)) {
+                    isValid = false;
+                    const errorElement = document.getElementById(`${input.id}-error`);
+                    if (errorElement) {
+                        errorElement.textContent = validator.message;
+                        errorElement.style.display = 'block';
+                    }
+                } else {
+                    const errorElement = document.getElementById(`${input.id}-error`);
+                    if (errorElement) {
+                        errorElement.style.display = 'none';
+                    }
+                }
+            });
+        });
+
+        return isValid;
+    }
 }

@@ -74,6 +74,9 @@ class App{
         document.getElementById('saveButton')?.addEventListener('click', () => {
             const bookIndex = parseInt((document.getElementById('saveButton') as HTMLButtonElement).getAttribute('data-index')!);
             const userId = parseInt((document.getElementById('user-id') as HTMLTextAreaElement).value);
+            const book = this.bookLibrary.getItems()[bookIndex];
+            const user = this.userLibrary.getItems()[userId];
+            this.modalManager.setModalContent('exampleModalToggle2', `${book.title} has been borrowed by ${user.name}`);
             this.borrowBook(bookIndex, userId);
 
         });
@@ -151,8 +154,6 @@ class App{
 
             this.storage.setItem('books', this.bookLibrary.getItems());
             this.storage.setItem('users', this.userLibrary.getItems());
-
-            this.modalManager.setModalContent('exampleModalToggle2', `${book.title} has been borrowed by ${user.name}`);
             this.renderBookList();
         } else {
             this.modalManager.setModalContent('exampleModalToggle2', 'Користувач не може позичити більше трьох книг!');

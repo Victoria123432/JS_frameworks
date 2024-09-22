@@ -25,9 +25,17 @@ export class NumberValidator implements ValidationStrategy{
 
 export class YearValidator implements ValidationStrategy{
     validate(value: string): boolean{
-        return /^\d{4}$/.test(value);
+        const currentYear = new Date().getFullYear();
+        const isValidFormat = /^\d{4}$/.test(value);
+       
+        if (!isValidFormat){
+            return false;
+        }
+
+        const year = parseInt(value, 10);
+        return year <= currentYear;
     }
-    message: string = "Введіть коректний рік (4 цифри)";
+    message: string = "Введіть коректний рік";
 }
 
 class ValidatorSelector {

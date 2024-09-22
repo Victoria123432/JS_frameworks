@@ -50,11 +50,37 @@ class App{
         }
     }
 
+    // private loadUsers(): void {
+    //     const savedUsers = this.storage.getItem('users');
+    //     if (savedUsers) {
+    //         savedUsers.forEach((userData: any) => {
+    //             // Створюємо нового користувача з даними
+    //             const user = new User(userData.name, userData.email, userData.borrowedBookCount);
+    
+    //             // Якщо є позичені книги, додаємо їх до користувача
+    //             userData.borrowedBooks.forEach((bookData: any) => {
+    //                 const borrowedBook = new Book(bookData.title, bookData.author, bookData.year, true);
+    //                 user.borrowBook(borrowedBook);
+    //             });
+    
+    //             this.userLibrary.addItem(user);
+    //         });
+    //         this.renderUserList();
+    //     }
+    // }
+    
+
     private saveUsers(): void{
         const usersToSave = this.userLibrary.getItems().map(user => ({
             name: user.name,
             email: user.email,
-            borrowedBookCount: user.borrowedBookCount
+            borrowedBookCount: user.borrowedBookCount,
+
+            // borrowedBooks: user.borrowedBooks.map(book => ({
+            //     title: book.title,
+            //     author: book.author,
+            //     year: book.year
+            // }))
         }));
         this.storage.setItem('users', usersToSave);
     }
@@ -73,11 +99,19 @@ class App{
     private setupEventListeners(): void{
         document.getElementById('saveButton')?.addEventListener('click', () => {
             const bookIndex = parseInt((document.getElementById('saveButton') as HTMLButtonElement).getAttribute('data-index')!);
-            const userId = parseInt((document.getElementById('user-id') as HTMLTextAreaElement).value);
+            const userInput = document.getElementById('user-id') as HTMLInputElement;
+            const isValid = this.formValidator.validateForm('id-form');
+            if (isValid){
+
+            const userId = parseInt(userInput.value);
             const book = this.bookLibrary.getItems()[bookIndex];
             const user = this.userLibrary.getItems()[userId];
             this.modalManager.setModalContent('exampleModalToggle2', `${book.title} has been borrowed by ${user.name}`);
             this.borrowBook(bookIndex, userId);
+            userInput.value = '';
+            this.modalManager.close('exampleModal');
+            this.modalManager.open('exampleModalToggle2');     
+            }    
 
         });
     }
@@ -95,12 +129,13 @@ class App{
             const buttonAttributes = book.isBorrowed
                 ? `data-user-id="${book.borrowedBy}" data-bs-target="#exampleModalToggle2"`
                 : 'data-bs-target="#exampleModal"';
+            const delButAt = book.isBorrowed ? 'disabled'  : ''  
 
                 listItem.innerHTML = `
                 <span>${book.title} - ${book.author} (${book.year})</span>
                 <div class="gap-2 d-md-flex justify-content-md-end">
                     <button type="button" id="borrow-btn-${index}" class="btn ${buttonClass} borrow-btn" ${buttonAttributes} data-bs-toggle="modal" data-index="${index}">${buttonText}</button>
-                    <button class="delete-book-btn btn btn-danger" data-index="${index}">Видалити</button>
+                    <button class="delete-book-btn btn btn-danger" data-index="${index}" ${delButAt}>Видалити</button>
                 </div>
             `;    
 
@@ -203,12 +238,19 @@ class App{
     private setupUserEventListeners(): void {
         document.querySelectorAll('.delete-user-btn').forEach(button => {
             button.addEventListener('click', (event) => {
+                event.preventDefault();
+
                 const target = event.target as HTMLButtonElement;
                 const index = target.getAttribute('data-index');
                 const user = this.userLibrary.getItems()[parseInt(index!)];
 
                 if (user.borrowedBookCount > 0) {
-                    alert(`Щоб видалити користувача, поверніть усі книги`);
+                    const borrowedBooksList = user.borrowedBooks
+                    .map(book => book.title)  // Витягуємо поле title з кожної книги
+                    .join(', ');  // Об'єднуємо назви через кому
+                    this.modalManager.setModalContent('exampleModalToggle2', `Щоб видалити користувача, поверніть: ${borrowedBooksList} `);
+                    this.modalManager.open('exampleModalToggle2');
+                    return;
                 }
 
                 this.userLibrary.removeItem(parseInt(index!));

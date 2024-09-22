@@ -32,11 +32,11 @@
       <form class="shadow p-3 mb-5 bg-body-tertiary rounded" id="user-form">
         <p class="text-capitalize fs-4 fw-bold">додати користувача</p>
         <div class="mb-3">
-          <input type="text" class="form-control" placeholder="Ім'я" data-validation="required">
+          <input type="text" class="form-control" placeholder="Ім'я" data-validation="required" id="name">
           <small class=" error-message text-danger" id="name-error"></small>
         </div>
         <div class="mb-3">
-          <input type="email" class="form-control" placeholder="Email" data-validation="required">
+          <input type="email" class="form-control" placeholder="Email" data-validation="required" id="email">
           <small class=" error-message text-danger" id="email-error"></small>
         </div>
         <button type="submit" class="btn btn-success text-capitalize">Додати користувача</button>
@@ -62,16 +62,17 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form>
+            <form id="id-form">
               <div class="mb-3">
                 <label for="message-text" class="col-form-label">ID:</label>
-                <textarea class="form-control" id="user-id"></textarea>
+                <input class="form-control" id="user-id" data-validation="number"></input>
+                <small class=" error-message text-danger" id="user-id-error"></small>
               </div>
             </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
-            <button type="button" id="saveButton" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal" class="btn btn-primary">Зберегти</button>
+            <button type="button" id="saveButton" data-bs-dismiss="modal" class="btn btn-primary">Зберегти</button>
           </div>
         </div>
       </div>

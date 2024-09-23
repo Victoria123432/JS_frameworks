@@ -39,51 +39,39 @@ class App{
         }
     }
 
-    private loadUsers(): void{
+    private loadUsers(): void {
         const savedUsers = this.storage.getItem('users');
-        if (savedUsers){
+        if (savedUsers) {
             savedUsers.forEach((userData: any) => {
-                const user = new User(userData.name, userData.email, userData.borrowedBookCount);
+                const borrowedBooks = userData.borrowedBooks.map((bookData: any) => {
+                    const book = new Book(bookData.title, bookData.author, bookData.year, bookData.isBorrowed);
+                    book.borrowedBy = bookData.borrowedBy;
+                    return book;
+                });
+                const user = new User(userData.name, userData.email, userData.borrowedBookCount, borrowedBooks);
                 this.userLibrary.addItem(user);
             });
             this.renderUserList();
         }
     }
-
-    // private loadUsers(): void {
-    //     const savedUsers = this.storage.getItem('users');
-    //     if (savedUsers) {
-    //         savedUsers.forEach((userData: any) => {
-    //             // Створюємо нового користувача з даними
-    //             const user = new User(userData.name, userData.email, userData.borrowedBookCount);
-    
-    //             // Якщо є позичені книги, додаємо їх до користувача
-    //             userData.borrowedBooks.forEach((bookData: any) => {
-    //                 const borrowedBook = new Book(bookData.title, bookData.author, bookData.year, true);
-    //                 user.borrowBook(borrowedBook);
-    //             });
-    
-    //             this.userLibrary.addItem(user);
-    //         });
-    //         this.renderUserList();
-    //     }
-    // }
     
 
-    private saveUsers(): void{
+    private saveUsers(): void {
         const usersToSave = this.userLibrary.getItems().map(user => ({
             name: user.name,
             email: user.email,
             borrowedBookCount: user.borrowedBookCount,
-
-            // borrowedBooks: user.borrowedBooks.map(book => ({
-            //     title: book.title,
-            //     author: book.author,
-            //     year: book.year
-            // }))
+            borrowedBooks: user.borrowedBooks.map(book => ({
+                title: book.title,
+                author: book.author,
+                year: book.year,
+                isBorrowed: book.isBorrowed,
+                borrowedBy: book.borrowedBy
+            }))
         }));
         this.storage.setItem('users', usersToSave);
     }
+    
 
     private saveBooks(): void{
         const booksToSave = this.bookLibrary.getItems().map(book => ({

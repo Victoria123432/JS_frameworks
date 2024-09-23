@@ -5,6 +5,7 @@ import prettier from "eslint-plugin-prettier"; // Імпорт плагіна pr
 
 export default [
   {
+    ignores: ["/dist", "/libs"],
     files: ["**/*.{js,mjs,cjs,ts}"],
     plugins: {
       prettier, // Додаємо плагін у правильному форматі

@@ -1,17 +1,17 @@
 import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
-import prettier from "eslint-plugin-prettier"; // Імпорт плагіна prettier
+import prettier from "eslint-plugin-prettier";
 
 export default [
   {
     ignores: ["/dist", "/libs"],
     files: ["**/*.{js,mjs,cjs,ts}"],
     plugins: {
-      prettier, // Додаємо плагін у правильному форматі
+      prettier,
     },
     rules: {
-      "prettier/prettier": "error",
+      "prettier/prettier": ["error", { "endOfLine": "auto" }]
     },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

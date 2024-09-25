@@ -11,7 +11,7 @@ export default [
       prettier,
     },
     rules: {
-      "prettier/prettier": ["error", { "endOfLine": "auto" }]
+      "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

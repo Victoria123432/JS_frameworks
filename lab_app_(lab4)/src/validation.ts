@@ -1,4 +1,4 @@
-enum ValidationType {
+export enum ValidationType {
     Required = 'required',
     Number = 'number',
     Year = 'year',
@@ -38,7 +38,7 @@ export class YearValidator implements ValidationStrategy{
     message: string = "Введіть коректний рік";
 }
 
-class ValidatorSelector {
+export class ValidatorSelector {
     private static validators: { [key in ValidationType]: ValidationStrategy } = {
         [ValidationType.Required]: new RequiredValidator(),
         [ValidationType.Number]: new NumberValidator(),

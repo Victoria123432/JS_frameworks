@@ -1,4 +1,10 @@
-import { RequiredValidator, NumberValidator, YearValidator, ValidationType, ValidatorSelector } from '../src/validation'; 
+import {
+  RequiredValidator,
+  NumberValidator,
+  YearValidator,
+  ValidationType,
+  ValidatorSelector,
+} from '../src/validation';
 
 describe('Validation Tests', () => {
   describe('RequiredValidator', () => {

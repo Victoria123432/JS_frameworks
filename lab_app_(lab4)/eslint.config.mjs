@@ -11,8 +11,8 @@ export default [
       prettier,
     },
     rules: {
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
-      "@typescript-eslint/no-explicit-any": "off",
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      '@typescript-eslint/no-explicit-any': 'off',
     },
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },

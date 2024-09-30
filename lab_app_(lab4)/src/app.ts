@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Book, User } from './models';
 import { Library } from './library';
 import { LocalStorageService } from './services';
@@ -355,4 +356,5 @@ class App {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app = new App();

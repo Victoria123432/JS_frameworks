@@ -1,4 +1,4 @@
-import { RequiredValidator, NumberValidator, YearValidator, ValidationType, ValidatorSelector } from '../src/validation'; // Вкажіть правильний шлях до вашого файлу
+import { RequiredValidator, NumberValidator, YearValidator, ValidationType, ValidatorSelector } from '../src/validation'; 
 
 describe('Validation Tests', () => {
     describe('RequiredValidator', () => {

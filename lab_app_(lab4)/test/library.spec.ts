@@ -28,7 +28,7 @@ describe('Library', () => {
 
     it('should not remove an item if the index is out of bounds', () => {
       library.addItem(1);
-      library.removeItem(1); // Out of bounds
+      library.removeItem(1);
       if (library.getItems().length !== 1 || library.getItems()[0] !== 1) {
         throw new Error('Item should not have been removed');
       }

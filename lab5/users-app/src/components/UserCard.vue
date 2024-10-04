@@ -11,7 +11,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import photo from '@/assets/user_photo.jpg';
+
 
 interface UserData{
     firstName: string;
@@ -33,7 +33,7 @@ export default defineComponent({
                 gender: 'Male',
                 age: 30,
                 position: 'Software Developer',
-                photo: photo,
+                photo: '',
                 hobbies:['Reading', 'Cycling', 'Gaming']
             } as UserData
         };

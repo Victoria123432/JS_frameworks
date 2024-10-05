@@ -1,18 +1,18 @@
 <template>
   <div class ="app">
-    <UserCard />
+    <UserList/>  
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import UserCard from './components/UserCard.vue';
+import UserList from './components/UserList.vue';
 
 
 export default defineComponent({
   name: 'App',
   components: {
-    UserCard
+    UserList,
   }
 });
 </script>

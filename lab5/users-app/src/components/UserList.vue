@@ -1,10 +1,15 @@
 <template>
     <div>
-        <div class="toolbar">
-      <button @click="filterUsers('all')" :class="{ active: filter === 'all' }">All</button>
-      <button @click="filterUsers('male')" :class="{ active: filter === 'male' }">Male</button>
-      <button @click="filterUsers('female')" :class="{ active: filter === 'female' }">Female</button>
-    </div>
+      <div class="toolbar">
+      <button 
+      v-for="(filterOption, index) in filterOptions" 
+      :key="index" 
+      @click="filterUsers(filterOption.value)" 
+      :class="{ active: filter === filterOption.value }">
+      {{ filterOption.label }}
+      </button>
+     </div>
+
     
     <div class="user-list">
       <p v-if="filteredUsers.length === 0">Список користувачів пустий</p>
@@ -60,7 +65,12 @@ export default defineComponent({
         { firstName: 'Olivia', lastName: 'Anderson', gender: 'Female', age: 17, position: 'UX Designer', photo: require('@/assets/images/user_photo.jpg'), hobbies: ['Drawing', 'Traveling'] },
         { firstName: 'James', lastName: 'Martin', gender: 'Male', age: 31, position: 'Software Engineer', photo: require('@/assets/images/user_photo.jpg'), hobbies: ['Hiking', 'Cooking'] },
         ] as UserData[],
-        filter: 'all'
+        filter: 'all',
+        filterOptions: [
+         { label: 'All', value: 'all' },
+         { label: 'Male', value: 'male' },
+         { label: 'Female', value: 'female' }
+      ]
 
      };
  },
